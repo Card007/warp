@@ -27,11 +27,20 @@ jobs:
       - name: Use Rust toolchain
         run: rustup default 1.92.0
 
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          key: macos-arm64-package
+          cache-on-failure: true
+
       - name: Install macOS package dependencies
         run: brew install protobuf create-dmg
 
       - name: Install cargo-bundle
         run: script/install_cargo_bundle
+
+      - name: Install cargo release dependencies
+        run: script/install_cargo_release_deps --no-build-deps
 
       - name: Add macOS arm64 target
         run: rustup target add aarch64-apple-darwin
