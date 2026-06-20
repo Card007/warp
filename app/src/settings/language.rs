@@ -18,8 +18,8 @@ use settings::{RespectUserSyncSetting, SupportedPlatforms, SyncToCloud};
 #[serde(rename_all = "snake_case")]
 #[schemars(rename_all = "snake_case")]
 pub enum UserInterfaceLanguage {
-    #[default]
     English,
+    #[default]
     Chinese,
 }
 
@@ -35,7 +35,7 @@ impl UserInterfaceLanguage {
 define_settings_group!(LanguageSettings, settings: [
    user_interface_language: UserInterfaceLanguageSetting {
        type: UserInterfaceLanguage,
-       default: UserInterfaceLanguage::English,
+       default: UserInterfaceLanguage::Chinese,
        supported_platforms: SupportedPlatforms::ALL,
        sync_to_cloud: SyncToCloud::Globally(RespectUserSyncSetting::Yes),
        private: false,
@@ -43,3 +43,13 @@ define_settings_group!(LanguageSettings, settings: [
        description: "The language used by the settings UI.",
    },
 ]);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn defaults_to_chinese() {
+        assert_eq!(UserInterfaceLanguage::default(), UserInterfaceLanguage::Chinese);
+    }
+}

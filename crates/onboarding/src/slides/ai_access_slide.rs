@@ -20,6 +20,7 @@ use warpui_core::{
 };
 
 use super::OnboardingSlide;
+use crate::localization::tr;
 use crate::model::{
     AiAccessChoice, NoAiConfirmationSource, OnboardingAuthState, OnboardingStateModel,
 };
@@ -141,7 +142,7 @@ impl AiAccessSlide {
 
         let title = appearance
             .ui_builder()
-            .paragraph("Choose how to access AI")
+            .paragraph(tr("Choose how to access AI"))
             .with_style(UiComponentStyles {
                 font_size: Some(36.),
                 font_weight: Some(Weight::Medium),
@@ -151,7 +152,7 @@ impl AiAccessSlide {
             .finish();
 
         let subtitle = FormattedTextElement::from_str(
-            "Save with a recurring plan, or use your own key or endpoint.",
+            tr("Save with a recurring plan, or use your own key or endpoint."),
             appearance.ui_font_family(),
             16.,
         )
@@ -250,7 +251,7 @@ impl AiAccessSlide {
 
         let label = appearance
             .ui_builder()
-            .paragraph("Subscription")
+            .paragraph(tr("Subscription"))
             .with_style(UiComponentStyles {
                 font_size: Some(16.),
                 font_weight: Some(Weight::Semibold),
@@ -264,7 +265,7 @@ impl AiAccessSlide {
             let green = theme.ansi_fg_green();
             let badge_text = appearance
                 .ui_builder()
-                .paragraph("Best value")
+                .paragraph(tr("Best value"))
                 .with_style(UiComponentStyles {
                     font_size: Some(12.),
                     font_weight: Some(Weight::Normal),
@@ -290,8 +291,9 @@ impl AiAccessSlide {
             .finish();
 
         let description = FormattedTextElement::from_str(
-            "Starting at $18 / mo, available with monthly or annual plans. Includes base credits, \
-             frontier models, cloud agents, collaboration, and more.",
+            tr(
+                "Starting at $18 / mo, available with monthly or annual plans. Includes base credits, frontier models, cloud agents, collaboration, and more.",
+            ),
             appearance.ui_font_family(),
             14.,
         )
@@ -304,7 +306,7 @@ impl AiAccessSlide {
         let choose_plan_button = self.choose_plan_button.render(
             appearance,
             button::Params {
-                content: button::Content::Label("Choose plan".into()),
+                content: button::Content::Label(tr("Choose plan").into()),
                 theme: &button::themes::Secondary,
                 options: button::Options {
                     on_click: Some(Box::new(|ctx, _app, _pos| {
@@ -348,7 +350,7 @@ impl AiAccessSlide {
 
         let label = appearance
             .ui_builder()
-            .paragraph("Use my own key or endpoint")
+            .paragraph(tr("Use my own key or endpoint"))
             .with_style(UiComponentStyles {
                 font_size: Some(16.),
                 font_weight: Some(Weight::Semibold),
@@ -359,7 +361,7 @@ impl AiAccessSlide {
             .finish();
 
         let description = FormattedTextElement::from_str(
-            "Use your own API key or OpenAI-compatible endpoint with Warp for free.",
+            tr("Use your own API key or OpenAI-compatible endpoint with Warp for free."),
             appearance.ui_font_family(),
             14.,
         )
@@ -372,7 +374,7 @@ impl AiAccessSlide {
         let add_key_button = self.add_key_button.render(
             appearance,
             button::Params {
-                content: button::Content::Label("+ Add key".into()),
+                content: button::Content::Label(tr("+ Add key").into()),
                 theme: &button::themes::Secondary,
                 options: button::Options {
                     on_click: Some(Box::new(|ctx, _app, _pos| {
@@ -386,7 +388,7 @@ impl AiAccessSlide {
         let add_endpoint_button = self.add_endpoint_button.render(
             appearance,
             button::Params {
-                content: button::Content::Label("+ Add custom endpoint".into()),
+                content: button::Content::Label(tr("+ Add custom endpoint").into()),
                 theme: &button::themes::Secondary,
                 options: button::Options {
                     on_click: Some(Box::new(|ctx, _app, _pos| {
@@ -433,18 +435,11 @@ impl AiAccessSlide {
     /// "N keys connected" / "1 key and 1 endpoint connected" summary for the
     /// BYOK card, or `None` when nothing is configured yet.
     fn byok_status_text(&self) -> Option<String> {
-        fn count_label(count: usize, noun: &str) -> String {
-            format!("{count} {noun}{}", if count == 1 { "" } else { "s" })
-        }
         match (self.byok_key_count, self.byok_endpoint_count) {
             (0, 0) => None,
-            (keys, 0) => Some(format!("{} connected", count_label(keys, "key"))),
-            (0, endpoints) => Some(format!("{} connected", count_label(endpoints, "endpoint"))),
-            (keys, endpoints) => Some(format!(
-                "{} and {} connected",
-                count_label(keys, "key"),
-                count_label(endpoints, "endpoint"),
-            )),
+            (keys, 0) => Some(format!("已连接 {keys} 个密钥")),
+            (0, endpoints) => Some(format!("已连接 {endpoints} 个端点")),
+            (keys, endpoints) => Some(format!("已连接 {keys} 个密钥和 {endpoints} 个端点")),
         }
     }
 
@@ -486,7 +481,7 @@ impl AiAccessSlide {
         let back_button = self.back_button.render(
             appearance,
             button::Params {
-                content: button::Content::Label("Back".into()),
+                content: button::Content::Label(tr("Back").into()),
                 theme: &button::themes::Naked,
                 options: button::Options {
                     on_click: Some(Box::new(|ctx, _app, _pos| {
@@ -501,7 +496,7 @@ impl AiAccessSlide {
         let no_ai_button = self.no_ai_button.render(
             appearance,
             button::Params {
-                content: button::Content::Label("I don't want AI".into()),
+                content: button::Content::Label(tr("I don't want AI").into()),
                 theme: &button::themes::Naked,
                 options: button::Options {
                     keystroke: Some(no_ai_keystroke),
@@ -518,7 +513,7 @@ impl AiAccessSlide {
         let next_button = self.next_button.render(
             appearance,
             button::Params {
-                content: button::Content::Label("Next".into()),
+                content: button::Content::Label(tr("Next").into()),
                 theme: &button::themes::Primary,
                 options: button::Options {
                     disabled: !can_advance,
@@ -526,9 +521,10 @@ impl AiAccessSlide {
                     // paid plan or a configured key/endpoint.
                     tooltip: (!can_advance).then(|| button::Tooltip {
                         params: tooltip::Params {
-                            label:
-                                "Warp Agent requires a subscription or inference supplied by you"
-                                    .into(),
+                            label: tr(
+                                "Warp Agent requires a subscription or inference supplied by you",
+                            )
+                            .into(),
                             options: tooltip::Options {
                                 keyboard_shortcut: None,
                             },
@@ -616,7 +612,7 @@ impl AiAccessSlide {
 
         let paste_token_link = ui_builder
             .link(
-                "Click here".into(),
+                tr("Click here").into(),
                 None,
                 Some(Box::new(|ctx| {
                     ctx.dispatch_typed_action(
@@ -636,7 +632,7 @@ impl AiAccessSlide {
             .with_child(
                 Container::new(
                     ui_builder
-                        .span("If your browser hasn't launched, ")
+                        .span(tr("If your browser hasn't launched, "))
                         .with_style(text_styles)
                         .build()
                         .finish(),
@@ -647,7 +643,7 @@ impl AiAccessSlide {
             .with_child(copy_url_link)
             .with_child(
                 ui_builder
-                    .span(" and open the page manually. ")
+                    .span(tr(" and open the page manually. "))
                     .with_style(text_styles)
                     .build()
                     .finish(),
@@ -655,7 +651,7 @@ impl AiAccessSlide {
             .with_child(paste_token_link)
             .with_child(
                 ui_builder
-                    .span(" to paste your token from the browser.")
+                    .span(tr(" to paste your token from the browser."))
                     .with_style(text_styles)
                     .build()
                     .finish(),
