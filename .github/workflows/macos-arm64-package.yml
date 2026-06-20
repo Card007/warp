@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           lfs: true
 
@@ -38,18 +38,23 @@ jobs:
 
       - name: Inspect app binary
         run: |
-          file target/aarch64-apple-darwin/release-lto/bundle/osx/WarpOss.app/Contents/MacOS/warp-oss
-          lipo -archs target/aarch64-apple-darwin/release-lto/bundle/osx/WarpOss.app/Contents/MacOS/warp-oss
+          file target/release-lto/bundle/osx/WarpOss.app/Contents/MacOS/warp-oss
+          lipo -archs target/release-lto/bundle/osx/WarpOss.app/Contents/MacOS/warp-oss
+          ls -lh target/release-lto/bundle/osx
 
-      - name: Upload app artifact
-        uses: actions/upload-artifact@v4
+      - name: Archive app bundle
+        run: ditto -c -k --sequesterRsrc --keepParent target/release-lto/bundle/osx/WarpOss.app target/release-lto/bundle/osx/WarpOss-macos-arm64.app.zip
+
+      - name: Upload app zip artifact
+        uses: actions/upload-artifact@v7
         with:
-          name: WarpOss-macos-arm64-app
-          path: target/aarch64-apple-darwin/release-lto/bundle/osx/WarpOss.app
+          name: WarpOss-macos-arm64-app-zip
+          path: target/release-lto/bundle/osx/WarpOss-macos-arm64.app.zip
+          if-no-files-found: error
 
       - name: Upload dmg artifact
-        if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: WarpOss-macos-arm64-dmg
-          path: target/aarch64-apple-darwin/release-lto/bundle/osx/**/*.dmg
+          path: target/release-lto/bundle/osx/WarpOss.dmg
+          if-no-files-found: error
