@@ -54,12 +54,13 @@ jobs:
         run: rustup target add aarch64-apple-darwin
 
       - name: Bundle WarpOss for MacBook M1
-        run: ./script/bundle --channel oss --arch aarch64 --nosign
+        run: ./script/bundle --channel oss --arch aarch64 --selfsign
 
       - name: Inspect app binary
         run: |
           file target/release-lto/bundle/osx/WarpOss.app/Contents/MacOS/warp-oss
           lipo -archs target/release-lto/bundle/osx/WarpOss.app/Contents/MacOS/warp-oss
+          codesign --verify --deep --strict --verbose=2 target/release-lto/bundle/osx/WarpOss.app
           ls -lh target/release-lto/bundle/osx
 
       - name: Archive app bundle
