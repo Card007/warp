@@ -1,0 +1,68 @@
+name: Promote macOS artifacts
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Successful Package macOS arm64 run ID."
+        required: true
+        type: string
+      release_tag:
+        description: "GitHub Release tag to publish assets under."
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  promote-macos-artifacts:
+    name: Promote macOS artifacts to release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifacts from run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir artifacts
+          gh run download "${{ inputs.run_id }}" --repo "$GITHUB_REPOSITORY" --dir artifacts
+
+      - name: Publish GitHub Release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          target_sha=$(gh run view "${{ inputs.run_id }}" --repo "$GITHUB_REPOSITORY" --json headSha --jq .headSha)
+          dmg=$(find artifacts -name "*.dmg" -print -quit)
+          app_zip=$(find artifacts -name "*.app.zip" -print -quit)
+
+          if [ -z "$dmg" ]; then
+            echo "::error::No .dmg artifact found."
+            exit 1
+          fi
+
+          if [ -z "$app_zip" ]; then
+            echo "::error::No .app.zip artifact found."
+            exit 1
+          fi
+
+          cp "$dmg" WarpOss-macos-arm64.dmg
+          cp "$app_zip" WarpOss-macos-arm64.app.zip
+
+          assets=(
+            WarpOss-macos-arm64.dmg
+            WarpOss-macos-arm64.app.zip
+          )
+
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "${assets[@]}" --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$RELEASE_TAG" "${assets[@]}" \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$target_sha" \
+              --title "$RELEASE_TAG" \
+              --notes "Unsigned macOS arm64 build promoted from Actions run ${{ inputs.run_id }} at $target_sha." \
+              --prerelease
+          fi
