@@ -61,7 +61,7 @@ use crate::pane_group::pane::view;
 use crate::pane_group::{BackingView, Direction, PaneConfiguration, PaneEvent, SplitPaneState};
 use crate::server::server_api::ServerApiProvider;
 use crate::server::telemetry::MCPServerCollectionPaneEntrypoint;
-use crate::settings::{AISettings, BlockVisibilitySettings, SettingsFileError};
+use crate::settings::{AISettings, BlockVisibilitySettings, LanguageSettings, SettingsFileError};
 use crate::settings_view::mcp_servers_page::{MCPServersSettingsPage, MCPServersSettingsPageEvent};
 use crate::terminal::model::blockgrid::BlockGrid;
 use crate::terminal::SizeInfo;
@@ -90,6 +90,7 @@ mod features;
 mod features_page;
 pub(crate) mod handoff_environment_creation_modal;
 pub mod keybindings;
+mod localization;
 mod main_page;
 pub mod mcp_servers;
 pub mod mcp_servers_page;
@@ -305,6 +306,10 @@ impl Display for SettingsSection {
 }
 
 impl SettingsSection {
+    pub fn localized_label(&self) -> String {
+        localization::tr(&self.to_string()).into_owned()
+    }
+
     /// Returns true if this section is a subpage under any umbrella.
     pub fn is_subpage(&self) -> bool {
         self.is_ai_subpage() || self.is_code_subpage() || self.is_cloud_platform_subpage()
@@ -1119,6 +1124,8 @@ pub struct SettingsView {
 impl SettingsView {
     pub fn new(page: Option<SettingsSection>, ctx: &mut ViewContext<Self>) -> Self {
         let pane_configuration = ctx.add_model(|_ctx| PaneConfiguration::new("Settings"));
+
+        ctx.subscribe_to_model(&LanguageSettings::handle(ctx), |_, _, _, ctx| ctx.notify());
 
         let global_resource_handles = GlobalResourceHandlesProvider::as_ref(ctx).get().clone();
         // Main settings page with accounts info
@@ -2406,6 +2413,7 @@ impl View for SettingsView {
     }
 
     fn render(&self, app: &AppContext) -> Box<dyn Element> {
+        localization::sync_from_settings(app);
         let settings_pages = self.filtered_pages(app).collect_vec();
         let appearance = Appearance::as_ref(app);
 

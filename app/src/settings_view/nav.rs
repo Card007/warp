@@ -4,6 +4,7 @@ use warpui::ui_components::button::{ButtonVariant, TextAndIcon, TextAndIconAlign
 use warpui::ui_components::components::{Coords, UiComponent, UiComponentStyles};
 
 use super::settings_page::{MatchData, NAV_ITEM_LEFT_MARGIN};
+use super::localization;
 use super::SettingsSection;
 use crate::appearance::Appearance;
 use crate::ui_components::icons::Icon;
@@ -73,7 +74,7 @@ impl SettingsUmbrella {
             .button(ButtonVariant::Text, self.button_state_handle.clone())
             .with_text_and_icon_label(TextAndIcon::new(
                 TextAndIconAlignment::TextFirst,
-                self.label.to_string(),
+                localization::tr(self.label).into_owned(),
                 chevron_icon.to_warpui_icon(text_color),
                 MainAxisSize::Max,
                 MainAxisAlignment::SpaceBetween,
@@ -99,7 +100,7 @@ impl SettingsUmbrella {
         let section = self.subpages.get(index)?;
         let mouse_state = self.subpage_button_states.get(index)?.clone();
 
-        let label = section.to_string() + &match_data.to_string();
+        let label = section.localized_label() + &match_data.to_string();
 
         let hoverable = appearance
             .ui_builder()

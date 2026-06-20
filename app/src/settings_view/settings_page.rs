@@ -181,7 +181,7 @@ impl SettingsPage {
                 },
                 self.button_state_handle.clone(),
             )
-            .with_text_label(self.section.to_string() + &match_data.to_string())
+            .with_text_label(self.section.localized_label() + &match_data.to_string())
             .with_style(
                 UiComponentStyles::default()
                     .set_border_width(0.)
@@ -281,7 +281,11 @@ pub fn build_sub_header(
     let color = color_override.unwrap_or(appearance.theme().active_ui_text_color());
     Container::new(
         Align::new(
-            Text::new_inline(text_name, appearance.ui_font_family(), SUBHEADER_FONT_SIZE)
+            Text::new_inline(
+                super::localization::tr(text_name.into().as_ref()).into_owned(),
+                appearance.ui_font_family(),
+                SUBHEADER_FONT_SIZE,
+            )
                 .with_style(Properties::default().weight(Weight::Bold))
                 .with_color(color.into())
                 .finish(),
@@ -302,7 +306,11 @@ pub fn render_sub_header_with_description(
             .with_child(build_sub_header(appearance, text_name, None).finish())
             .with_child(
                 Align::new(
-                    Text::new(description, appearance.ui_font_family(), CONTENT_FONT_SIZE)
+                    Text::new(
+                        super::localization::tr(description.into().as_ref()).into_owned(),
+                        appearance.ui_font_family(),
+                        CONTENT_FONT_SIZE,
+                    )
                         .with_color(appearance.theme().nonactive_ui_text_color().into())
                         .finish(),
                 )
@@ -324,7 +332,11 @@ pub fn render_sub_sub_header(
     let mut sub_sub_header = Flex::row().with_child(
         Container::new(
             Align::new(
-                Text::new_inline(text_name, appearance.ui_font_family(), CONTENT_FONT_SIZE)
+                Text::new_inline(
+                    super::localization::tr(text_name.into().as_ref()).into_owned(),
+                    appearance.ui_font_family(),
+                    CONTENT_FONT_SIZE,
+                )
                     .with_style(Properties::default().weight(Weight::Bold))
                     .with_color(appearance.theme().active_ui_text_color().into())
                     .finish(),
@@ -359,7 +371,11 @@ pub fn render_custom_size_header(
         .with_child(
             Container::new(
                 Align::new(
-                    Text::new_inline(text_name, appearance.ui_font_family(), font_size)
+                    Text::new_inline(
+                        super::localization::tr(text_name.into().as_ref()).into_owned(),
+                        appearance.ui_font_family(),
+                        font_size,
+                    )
                         .with_style(Properties::default().weight(Weight::Bold))
                         .with_color(
                             color_override
@@ -551,6 +567,7 @@ pub fn render_info_icon<T: Clone + Action>(
     let tooltip_text = additional_info
         .tooltip_override_text
         .unwrap_or("Click to learn more in docs".to_owned());
+    let tooltip_text = super::localization::tr(&tooltip_text).into_owned();
     let icon = Container::new(
         ConstrainedBox::new(
             Icon::Info
@@ -608,7 +625,14 @@ pub fn render_local_only_icon(
         .ui_builder()
         .local_only_icon_with_tooltip(
             13.,
-            custom_tooltip.unwrap_or("This setting is not synced to your other devices".to_owned()),
+            custom_tooltip
+                .as_deref()
+                .map(super::localization::tr)
+                .map(Cow::into_owned)
+                .unwrap_or_else(|| {
+                    super::localization::tr("This setting is not synced to your other devices")
+                        .into_owned()
+                }),
             mouse_state.clone(),
         )
         .finish();
@@ -672,8 +696,12 @@ pub fn render_body_item_label_internal<T: Clone + Action>(
             ToggleState::Disabled => appearance.theme().disabled_ui_text_color(),
         },
     };
-    let label_text = Text::new_inline(label_text, appearance.ui_font_family(), CONTENT_FONT_SIZE)
-        .with_color(label_color.into());
+    let label_text = Text::new_inline(
+        super::localization::tr(&label_text).into_owned(),
+        appearance.ui_font_family(),
+        CONTENT_FONT_SIZE,
+    )
+    .with_color(label_color.into());
     if let Some(icon) = label_icon {
         label.add_child(
             Container::new(
@@ -698,7 +726,7 @@ pub fn render_body_item_label_internal<T: Clone + Action>(
                 Some(
                     appearance
                         .ui_builder()
-                        .span(secondary_text)
+                        .span(super::localization::tr(&secondary_text).into_owned())
                         .with_style(UiComponentStyles {
                             font_color: Some(
                                 warp_theme
@@ -759,7 +787,11 @@ pub fn render_body_item_label_internal<T: Clone + Action>(
 pub fn render_page_title(text: &str, size: f32, appearance: &Appearance) -> Box<dyn Element> {
     Container::new(
         Align::new(
-            Text::new_inline(text.to_string(), appearance.ui_font_family(), size)
+            Text::new_inline(
+                super::localization::tr(text).into_owned(),
+                appearance.ui_font_family(),
+                size,
+            )
                 .with_style(Properties::default().weight(Weight::Bold))
                 .with_color(appearance.theme().active_ui_text_color().into())
                 .finish(),
@@ -828,7 +860,7 @@ pub fn build_toggle_element(
     if let Some(description_text) = description_text {
         let description = appearance
             .ui_builder()
-            .paragraph(description_text)
+            .paragraph(super::localization::tr(&description_text).into_owned())
             .with_style(UiComponentStyles {
                 font_color: Some(blended_colors::text_sub(
                     appearance.theme(),
@@ -862,7 +894,11 @@ pub fn render_dropdown_item_label(
     color_override: Option<Fill>,
     appearance: &Appearance,
 ) -> Box<dyn Element> {
-    let label = Text::new(label_text, appearance.ui_font_family(), CONTENT_FONT_SIZE)
+    let label = Text::new(
+        super::localization::tr(&label_text).into_owned(),
+        appearance.ui_font_family(),
+        CONTENT_FONT_SIZE,
+    )
         .with_color(
             color_override
                 .unwrap_or(appearance.theme().active_ui_text_color())
@@ -873,7 +909,7 @@ pub fn render_dropdown_item_label(
         let warp_theme = appearance.theme();
         let secondary_text_child = appearance
             .ui_builder()
-            .span(secondary_text)
+            .span(super::localization::tr(&secondary_text).into_owned())
             .with_style(UiComponentStyles {
                 font_color: Some(
                     color_override
@@ -978,7 +1014,7 @@ pub(crate) fn render_settings_info_banner(
     let text = {
         let mut children = vec![Container::new(
             Text::new(
-                text.to_string(),
+                super::localization::tr(text).into_owned(),
                 appearance.ui_font_family(),
                 appearance.ui_font_size(),
             )
@@ -991,7 +1027,7 @@ pub(crate) fn render_settings_info_banner(
             children.push(
                 Container::new(
                     Text::new(
-                        subtext.to_string(),
+                        super::localization::tr(subtext).into_owned(),
                         appearance.ui_font_family(),
                         appearance.ui_font_size() - 1.,
                     )
@@ -1133,7 +1169,7 @@ fn render_workspace_override_row_tooltip(
         if state.is_hovered() {
             let tooltip = appearance
                 .ui_builder()
-                .tool_tip(WORKSPACE_OVERRIDE_TOOLTIP_TEXT.to_string())
+                .tool_tip(super::localization::tr(WORKSPACE_OVERRIDE_TOOLTIP_TEXT).into_owned())
                 .build()
                 .finish();
             stack.add_positioned_child(
