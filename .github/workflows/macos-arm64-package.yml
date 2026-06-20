@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "Optional GitHub Release tag to publish assets, for example macos-arm64-latest."
+        description: "Optional existing GitHub Release tag to publish assets under."
         required: false
         type: string
   push:
@@ -85,6 +85,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
         run: |
+          if ! git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "::error::Release tag '$RELEASE_TAG' does not exist. Push the tag first or use a tag-triggered run."
+            exit 1
+          fi
+
           cp target/release-lto/bundle/osx/WarpOss.dmg target/release-lto/bundle/osx/WarpOss-macos-arm64.dmg
 
           assets=(
@@ -97,7 +102,7 @@ jobs:
           else
             gh release create "$RELEASE_TAG" "${assets[@]}" \
               --repo "$GITHUB_REPOSITORY" \
-              --target "$GITHUB_SHA" \
+              --verify-tag \
               --title "$RELEASE_TAG" \
               --notes "Unsigned macOS arm64 build from $GITHUB_SHA." \
               --prerelease

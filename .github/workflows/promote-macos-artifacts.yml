@@ -59,9 +59,14 @@ jobs:
           if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release upload "$RELEASE_TAG" "${assets[@]}" --repo "$GITHUB_REPOSITORY" --clobber
           else
+            if ! gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" >/dev/null 2>&1; then
+              echo "::error::Release tag '$RELEASE_TAG' does not exist. Push the tag first."
+              exit 1
+            fi
+
             gh release create "$RELEASE_TAG" "${assets[@]}" \
               --repo "$GITHUB_REPOSITORY" \
-              --target "$target_sha" \
+              --verify-tag \
               --title "$RELEASE_TAG" \
               --notes "Unsigned macOS arm64 build promoted from Actions run ${{ inputs.run_id }} at $target_sha." \
               --prerelease
