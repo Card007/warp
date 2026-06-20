@@ -27,8 +27,11 @@ jobs:
       - name: Use Rust toolchain
         run: rustup default 1.92.0
 
+      - name: Install macOS package dependencies
+        run: brew install protobuf create-dmg
+
       - name: Install cargo-bundle
-        run: cargo install cargo-bundle --locked
+        run: script/install_cargo_bundle
 
       - name: Add macOS arm64 target
         run: rustup target add aarch64-apple-darwin
