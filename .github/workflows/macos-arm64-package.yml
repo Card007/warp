@@ -42,7 +42,9 @@ jobs:
           cache-on-failure: true
 
       - name: Install macOS package dependencies
-        run: brew install protobuf create-dmg
+        run: |
+          brew untap aws/tap azure/bicep || true
+          brew install protobuf create-dmg
 
       - name: Install cargo-bundle
         run: script/install_cargo_bundle
